@@ -1,0 +1,196 @@
+---
+output: github_document
+---
+
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "pdf/",
+  out.width = "100%"
+)
+```
+
+# Testing of cheatsheet components
+
+
+This file is a rough checker of the cheatsheet, just to ensure
+that code chunks are working as expected. 
+
+It's running on a local computer with vigicaen up to date.
+You might not be able to reproduce it as is.
+```{r}
+library(vigicaen)
+```
+
+
+```{r paths}
+path_main  <- '/your/path/to/vigibase/main/'
+path_sub   <- '/your/path/to/vigibase/sub/'
+path_who   <- '/your/path/to/vigibase/who/'
+path_meddra <-'/your/path/to/meddra/'
+
+path_main  <- 'C:/Data/vigibase_2024_sep/main/'
+path_sub   <- 'C:/Data/vigibase_2024_sep/sub/'
+path_who   <- 'C:/Data/vigibase_2024_sep//who/'
+path_meddra <-'C:/Data/Nextcloud/Database/meddra_27_1/MedAscii/'
+```
+
+
+## Load and assign tables
+
+```{r}
+demo <- dt_parquet(path_main, 'demo')
+drug <- dt_parquet(path_main, 'drug')
+adr <- dt_parquet(path_main, 'adr', in_memory = FALSE)
+link <- dt_parquet(path_main, 'link', in_memory = FALSE)
+mp <- dt_parquet(path_who, 'mp')
+thg <- dt_parquet(path_who, 'thg')
+meddra <- dt_parquet(path_meddra, 
+'meddra_hierarchy')
+smq_list <- dt_parquet(path_meddra, 'smq_list')
+smq_content <- dt_parquet(path_meddra, 
+'smq_content')
+```
+
+## Set up dictionary
+
+```{r}
+d_sel <-
+  list(analgesics = c('paracetamol', 'tramadol'))
+a_sel <-
+  list(hepatitis = c('Hepatitis'))
+
+smq_sel <-
+list(ihd = c('Ischaemic heart disease (SMQ)'))
+
+atc_sel <- list(cardiac_drugs = c('C01'))
+
+a_sel_many <-
+list(analgesics = c('paracetamol', 'tramadol'),
+nivolumab = 'nivolumab',
+ici = c('nivolumab', 'ipilimumab'))
+```
+
+
+## Collect IFs
+
+```{r}
+d_drecno <- get_drecno(d_sel , mp)
+
+d_drecno_atc <- get_atc_code(atc_sel, mp, thg)
+
+a_llt <- get_llt_soc(a_sel, term_level = 'pt', meddra)
+
+a_llt_smq <- get_llt_smq(smq_sel, smq_list = smq_list, smq_content = smq_content)
+```
+
+## Plot graph
+
+```{r}
+vigi_routine(
+demo, drug, adr, link,
+d_code = d_drecno,
+a_code = a_llt,
+case_tto = 50,
+vigibase_version = 'Sep 2024')
+
+vigi_routine(
+demo, drug, adr, link,
+d_code = d_drecno,
+a_code = a_llt,
+case_tto = 50,
+vigibase_version = 'Sep 2024',
+export_to = 'graph.svg')
+```
+
+## Add drug & adr columns
+
+```{r}
+demo <-
+add_drug(demo, d_drecno, drug_data = drug)
+
+demo <-
+add_drug(demo, d_drecno_atc, drug_data = drug)
+
+demo <-
+add_adr(demo, a_llt, adr_data = adr)
+```
+### Check data management
+
+```{r}
+check_dm(demo, c('analgesics', 'hepatitis'))
+```
+## Disproportionality
+
+```{r}
+compute_dispro(
+demo, 'hepatitis', 'analgesics')
+
+mod <- glm(hepatitis ~ analgesics + AgeGroup + 
+Gender, family = 'binomial', data = demo)
+summary(mod)$coefficients |> 
+compute_or_mod(
+estimate = Estimate, std_er = Std..Error
+)
+```
+
+```{r}
+tb_subset(path_main, 
+   paste0(path_main, 'subset'),  
+   subset_var = 'age',
+   sv_selection = 7)
+
+```
+
+## Description
+
+```{r}
+desc_facvar(demo, vf = c('hepatitis', 'Gender'))
+
+# demo <- dplyr::mutate(demo, date = lubridate::year(lubridate::ymd(FirstDateDatabase)))
+
+# desc_cont(demo, vc = 'date') # irrelevant
+
+```
+### Link
+
+```{r}
+link <-
+  add_drug(link, d_drecno, drug_data = drug) |>
+  add_adr(a_llt, adr_data = adr)
+
+desc_tto(link, 'analgesics',
+  'hepatitis')
+
+
+ttos <- extract_tto(link,
+  'analgesics',
+  'hepatitis')
+hist(ttos$tto_max)
+
+desc_dch(link |> dplyr::collect() |> data.table::as.data.table(),
+  'analgesics',
+  'hepatitis')
+
+desc_rch(link |> dplyr::collect() |> data.table::as.data.table(), demo, 'analgesics', 'hepatitis')
+```
+### Adr
+
+```{r}
+adr <-
+  add_drug(adr, d_drecno, drug_data = drug) |>
+  add_adr(a_llt, adr_data = adr)
+
+desc_outcome(adr |> dplyr::collect() |> data.table::as.data.table(), 'analgesics', 'hepatitis')
+```
+
+### Screen drugs & adrs
+
+```{r}
+screen_drug(drug, mp, 0.10)
+screen_adr(adr, meddra, 'hlgt', 0.10)
+
+```
+
