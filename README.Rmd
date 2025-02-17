@@ -1,0 +1,28 @@
+---
+output: github_document
+---
+
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "pdf/",
+  out.width = "100%"
+)
+options(tibble.print_min = 5, tibble.print_max = 5)
+```
+
+# cheatsheets
+
+File hosting repo for package cheatsheets
+
+## vigicaen Cheatsheet
+
+Find the complete package documentation at [pharmacologie-caen.github.io/vigicaen](https://pharmacologie-caen.github.io/vigicaen/)
+
+Or on GitHub [pharmacologie-caen/vigicaen](https://github.com/pharmacologie-caen/vigicaen)
+
+## Cheat Sheet
+
+<a href="https://github.com/pharmacologie-caen/cheatsheets/pdf/vigicaen.pdf"><img src="https://github.com/pharmacologie-caen/cheatsheets/pdf/vigicaen.png" width="630" height="252"/></a>  

@@ -1,11 +1,16 @@
+
 # cheatsheets
 
 File hosting repo for package cheatsheets
 
 ## vigicaen Cheatsheet
 
-Find the complete package documentation at [pharmacologie-caen.github.io/vigicaen](https://pharmacologie-caen.github.io/vigicaen/)
+Find the complete package documentation at
+[pharmacologie-caen.github.io/vigicaen](https://pharmacologie-caen.github.io/vigicaen/)
 
-Or on GitHub [pharmacologie-caen/vigicaen](https://github.com/pharmacologie-caen/vigicaen)
+Or on GitHub
+[pharmacologie-caen/vigicaen](https://github.com/pharmacologie-caen/vigicaen)
 
-![](pdf/vigicaen.pdf)
+## Cheat Sheet
+
+<a href="https://github.com/pharmacologie-caen/cheatsheets/pdf/vigicaen.pdf"><img src="https://github.com/pharmacologie-caen/cheatsheets/pdf/vigicaen.png" width="630" height="252"/></a>
